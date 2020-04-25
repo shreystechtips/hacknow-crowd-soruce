@@ -1,72 +1,62 @@
-import React from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  Alert,
-  SafeAreaView,
-} from "react-native";
+import 'react-native-gesture-handler';
+import React, { Component } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { Button, View, Text } from 'react-native';
+import HomeScreen from "./screens/HomeScreen.js";
+import ReportScreen from "./screens/ReportScreen.js";
+// import { default as Selector } from './screens/Selector'
+
+const Stack = createStackNavigator();
+
+// class ErrorBoundary extends React.Component {
+//   constructor(props) {
+//     super(props);
+//     this.state = { hasError: false };
+//   }
+
+//   static getDerivedStateFromError(error) {
+//     // Update state so the next render will show the fallback UI.
+//     return { hasError: true };
+//   }
+
+//   componentDidCatch(error, errorInfo) {
+//     // You can also log the error to an error reporting service
+//     logErrorToMyService(error, errorInfo);
+//   }
+
+//   render() {
+//     if (this.state.hasError) {
+//       // You can render any custom fallback UI
+//       return <View><Text>Something went wrong.</Text></View>;
+//     }
+
+//     return this.props.children;
+//   }
+// }
+
 
 export default function App() {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.box}>
-        <View
-          style={{
-            backgroundColor: "#FCFFFC",
-            height: 10,
-            marginLeft: "25%",
-            marginRight: "25%",
-            borderRadius: 10,
-            marginBottom: 15,
-          }}
-        />
-        <Text style={{ color: "#ffffff" }}>
-          Open up App.js to start working on your app!
-        </Text>
-        <Button
-          title="Press me"
-          onPress={() =>
-            Alert.alert(
-              "Simple Button pressed",
-              "Description",
-              [
-                {
-                  text: "Ask me later",
-                  onPress: () => console.log("Ask me later pressed"),
-                },
-                {
-                  text: "Cancel",
-                  onPress: () => console.log("Cancel Pressed"),
-                  style: "cancel",
-                },
-                { text: "OK", onPress: () => console.log("OK Pressed") },
-              ],
-              { cancelable: false }
-            )
-          }
-        />
-        <View style={{ height: 200, width: "100%" }} />
-      </View>
-    </SafeAreaView>
+    // <ErrorBoundary>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ title: 'Yeet', headerRight: () => (<Button title="Test" onPress={() => alert('button')} />) }}
+          />
+          <Stack.Screen
+            name="Reporst"
+            component={HomeScreen}
+          />
+          <Stack.Screen
+            name="Report"
+            component={ReportScreen}
+            options={{ title: "What's available?" }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    // </ErrorBoundary>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FCFFFC",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    color: "#fff",
-  },
-  box: {
-    borderTopLeftRadius: 50,
-    borderTopEndRadius: 50,
-    backgroundColor: "#2D3A3A",
-    padding: 30,
-    bottom: 0,
-    width: "97%",
-  },
-});

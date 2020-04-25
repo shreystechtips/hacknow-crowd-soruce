@@ -9,3 +9,7 @@ hackp.ac/learn
 - blockstack for privacy
 - Radar for geofencing
 - spark AR for sticker
+
+## DOCS
+
+- Navigation: https://reactnative.dev/docs/navigation
