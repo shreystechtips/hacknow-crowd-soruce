@@ -51,7 +51,7 @@ export default function HomeScreen({ navigation }) {
 				/>
 				<Button
 					title="Report an item"
-					onPress={() => navigation.navigate('Reporst', { name: 'Jane' })}
+					onPress={() => navigation.navigate('Report', { name: 'Jane' })}
 				/>
 				<View style={{ height: 200, width: "100%" }} />
 			</View>
