@@ -1,159 +1,210 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-	StyleSheet,
-	Text,
-	View,
-	Button,
-	Alert,
-	SafeAreaView,
-	ActivityIndicator,
-	FlatList,
-	TextInput,
-	Item,
-	List,
-	ListItem,
-	TouchableHighlight,
-	TouchableOpacity,
-	Image,
-	I18nManager,
-	Animated
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+  SafeAreaView,
+  ActivityIndicator,
+  FlatList,
+  TextInput,
+  Item,
+  List,
+  ListItem,
+  TouchableHighlight,
+  TouchableOpacity,
+  Image,
+  I18nManager,
+  Animated,
+  ScrollView,
 } from "react-native";
 import Swiper from "./Swiper";
-import { Swipeable, RectButton } from 'react-native-gesture-handler';
-import AppleStyleSwipeableRow from './SwipeableItem';
+import { Swipeable, RectButton } from "react-native-gesture-handler";
+import AppleStyleSwipeableRow from "./SwipeableItem";
+import { Button } from "react-native-elements";
+import { Icon, Tooltip, Overlay } from "react-native-elements";
+import { submitToGoogle, uploadData } from "../../components/ImageProcessing";
 
-const Row = ({ item }) => (
-	<RectButton
-		style={styles.rectButton}
-		onPress={() => alert(item.name)}
-	>
-		<Text style={styles.fromText}>{item.name}</Text>
-		<Text style={styles.dateText}>
-			{item.category}
-		</Text>
-	</RectButton>
+const Row = ({ item, setOverlay }) => (
+  <RectButton style={styles.rectButton} onPress={() => setOverlay(true)}>
+    <Text style={styles.nameText}>{item.name}</Text>
+    <Text numberOfLines={2} style={styles.dateText}>
+      {item.category}
+    </Text>
+  </RectButton>
 );
 
-export default function ReportItemScreen({ navigation }) {
-	const [isLoading, setLoading] = useState(false);
-	const [data, setData] = useState({});
+const categoriesAndProducts = {
+  "Non-Perishable Foods": {
+    list: ["Canned Meat", "Dried Vegetables"],
+  },
+  "Hygenic Products": {
+    list: ["Disinfectant Wipes", "Hand Sanatizer", "Bleach", "Hand Soap"],
+  },
+  "First Aid": {
+    list: ["Bandages", "First Aid Kits"],
+  },
+  "Over The Counter Medical": {
+    list: ["Tylenol", "Vitamins"],
+  },
+};
 
-	useEffect(() => {
-		setLoading(true)
-		setData(["Item1", "Item2", "Item3"].reduce((map, item, index) => {
-			const key = index;
-			map[key] = {
-				name: item,
-				inStock: true,
-				category: "Food"
-			}
-			return map;
-		}, {}));
-		setLoading(false);
-	}, [])
+export default function ReportItemScreen({ route, navigation }) {
+  const [isLoading, setLoading] = useState(false);
+  const [data, setData] = useState({});
+  const [refreshData, setRefresh] = useState(true);
+  const [overlay, setOverlay] = useState(false);
+  // const [oneTimeOverlay, setOneTimeOverlay] = useState(true);
 
+  useEffect(() => {
+    setLoading(true);
+    let counter = 0;
+    let map = {};
+    route.params.data.responses[0].labelAnnotations.forEach((item) => {
+      map[counter++] = {
+        name: item["description"],
+        inStock: true,
+        category: "",
+      };
+    });
 
-	function setStock(swipeDir, id) {
+    Object.keys(categoriesAndProducts).forEach((key) => {
+      categoriesAndProducts[key].list.forEach((element) => {
+        map[counter++] = {
+          name: element,
+          inStock: true,
+          category: key,
+        };
+      });
+    });
+    console.log(map);
+    setData(map);
+    setLoading(false);
+  }, []);
 
-		// Set stock based on 4 levels: None, Low, Medium, High
-		// FOR now: 2 levels: 0, 1
-		console.log(id)
+  function setStock(swipeDir, id) {
+    // console.log(swipeDir);
 
-		// let indexUpdate = 0;
-		// let updateData = data.find( item => {indexUpdate++; return item.id === id});
-		// const sameDataLeft = data.slice(0, indexUpdate);
-		// const sameDataRight = data.slice(indexUpdate + 1, data.length);
-		// console.log(updateData);
-		// console.log(indexUpdate);
-		// console.log(sameDataLeft);
-		// console.log(sameDataRight);
+    // Set stock based on 4 levels: false None, 1 Low, 2 Medium, 3 High
+    // console.log(id);
+    // let temp = data.slice();
 
-		// Set state based on swipe
-		switch (swipeDir) {
-			case "SWIPE_LEFT":
-				// Set stock to 0
-				data[id].inStock = false;
-				break;
-			// updateData.inStock = false;
-			case "SWIPE_RIGHT_0":
-				// Set stock to low
-				// updateData.inStock = true;
-				data[id].inStock = true;
-				break;
-		}
-		setData(data);
-		// setData(sameDataLeft + updateData + sameDataRight);
-	}
-	return (
-		<SafeAreaView style={{ flex: 1 }}>
-			<View style={{ padding: 24 }}>
-
-				{isLoading ? <ActivityIndicator /> : (
-					// console.log(data),
-					<FlatList
-						data={Object.keys(data)}
-						// keyExtractor={({item}, index) => console.log(item)}
-						renderItem={({ item }) =>
-							// <Swiper title={data[item].name} render={data[item].inStock} handleSwipe={(swipe) => setStock(swipe, item)} />
-							<AppleStyleSwipeableRow >
-								{console.log(data[item])}
-								<Row item={data[item]} />
-								{/* <Text >Swipe Here</Text> */}
-							</AppleStyleSwipeableRow>
-						}
-					/>
-				)}
-			</View>
-		</SafeAreaView>
-	);
+    // Set state based on swipe
+    switch (swipeDir.toLowerCase()) {
+      case "left":
+        data[id].inStock = false;
+        break;
+      case "low":
+        data[id].inStock = 1;
+        break;
+      case "med":
+        data[id].inStock = 2;
+        break;
+      case "high":
+        data[id].inStock = 3;
+        break;
+    }
+    setData(data);
+    setRefresh(!refreshData);
+  }
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Overlay isVisible={overlay} onBackdropPress={() => setOverlay(false)}>
+        <View style={styles.rectButton}>
+          <Text>Tinder with shopping!</Text>
+          <Text> Swipe left if it's in stock</Text>
+          <Text>Swipe right if it's out of stock --></Text>
+          <Button
+            title="Got it!"
+            type="outline"
+            onPress={() => setOverlay(false)}
+          />
+        </View>
+      </Overlay>
+      <View style={{ padding: 24 }}>
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <FlatList
+            data={Object.keys(data)}
+            keyExtractor={(key) => key.toString()}
+            extraData={refreshData}
+            renderItem={({ item }) => {
+              return data[item].inStock === true ? (
+                <AppleStyleSwipeableRow
+                  handleSwipe={(swipe) => setStock(swipe, item)}
+                >
+                  <Row item={data[item]} setOverlay={setOverlay} />
+                </AppleStyleSwipeableRow>
+              ) : (
+                <View />
+              );
+            }}
+          />
+        )}
+      </View>
+      <View style={styles.submitView}>
+        <Icon
+          raised
+          name="check"
+          type="font-awesome"
+          color="#0f0"
+          onPress={() => {
+            console.log("done"),
+              uploadData(
+                { ...route.params.data, items: { ...data } },
+                route.params.store
+              );
+            navigation.navigate("Toggle");
+          }}
+        />
+        <Icon
+          raised
+          name="question"
+          type="font-awesome"
+          color="#f00"
+          onPress={() => setOverlay(true)}
+        />
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-	leftAction: {
-		flex: 1,
-		backgroundColor: '#388e3c',
-		justifyContent: 'flex-end',
-		alignItems: 'center',
-		flexDirection: I18nManager.isRTL ? 'row' : 'row-reverse'
-	},
-	actionIcon: {
-		width: 30,
-		marginHorizontal: 10
-	},
-	rightAction: {
-		alignItems: 'center',
-		flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row',
-		backgroundColor: '#dd2c00',
-		flex: 1,
-		justifyContent: 'flex-end'
-	},
-	rectButton: {
-		flex: 1,
-		height: 80,
-		paddingVertical: 10,
-		paddingHorizontal: 10,
-		justifyContent: 'space-between',
-		flexDirection: 'column',
-		backgroundColor: 'white',
-	},
-	separator: {
-		backgroundColor: 'rgb(200, 199, 204)',
-		height: StyleSheet.hairlineWidth,
-	},
-	fromText: {
-		fontWeight: 'bold',
-		backgroundColor: 'transparent',
-	},
-	messageText: {
-		color: '#999',
-		backgroundColor: 'transparent',
-	},
-	dateText: {
-		backgroundColor: 'transparent',
-		position: 'absolute',
-		right: 30,
-		top: 10,
-		color: '#999',
-		fontWeight: 'bold',
-	},
+  rectButton: {
+    flex: 1,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    justifyContent: "space-between",
+    flexDirection: "row",
+    backgroundColor: "white",
+    borderRadius: 10,
+  },
+  nameText: {
+    alignItems: "center",
+    flex: 1,
+    fontWeight: "bold",
+    backgroundColor: "transparent",
+    fontSize: 16,
+  },
+  dateText: {
+    flex: 1,
+    backgroundColor: "transparent",
+
+    right: 0,
+    top: 0,
+    color: "#999",
+    fontWeight: "bold",
+  },
+  submitView: {
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexDirection: I18nManager.isRTL ? "row-reverse" : "row",
+    paddingHorizontal: 50,
+    paddingVertical: 20,
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: "100%",
+  },
 });

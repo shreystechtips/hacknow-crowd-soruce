@@ -11,14 +11,19 @@ import {
   Image,
 } from "react-native";
 import { Camera } from "expo-camera";
-import { processDocument } from "../components/ImageProcessing";
+import { submitToGoogle, uploadData } from "../components/ImageProcessing";
+import * as ImageManipulator from "expo-image-manipulator";
+import { Icon } from "react-native-elements";
 
 const screenWidth = Math.round(Dimensions.get("window").width);
 
-export default function ProductImage({ navigation }) {
+export default function ProductImage({ route, navigation }) {
+  // const {store} = param.params;
+  // console.log(route.params.store);
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [img, setImg] = useState(null);
+  const [processed, setProcessed] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -30,7 +35,24 @@ export default function ProductImage({ navigation }) {
     if (camera) {
       let photo = await camera.takePictureAsync();
       setImg(photo["uri"]);
-      //  await processDocument(img);
+      let manipResult = await ImageManipulator.manipulateAsync(
+        photo["uri"],
+        [],
+        { compress: 0, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+      );
+      const response = await submitToGoogle(manipResult["base64"]);
+      var total = "";
+      console.log(response);
+      await response["responses"][0]["labelAnnotations"].forEach((element) => {
+        console.log(element["description"]);
+        total += `${element["description"]}, `;
+      });
+      Alert.alert("Items Detected", total, [{ text: "OK" }], {
+        cancelable: false,
+      });
+      // await uploadData(response, route.params.store);
+      console.log(response);
+      setProcessed(response);
     }
   };
   let camera;
@@ -41,10 +63,13 @@ export default function ProductImage({ navigation }) {
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
+
   return (
     <SafeAreaView style={styles.container}>
       {img == null ? (
-        <View style={{ flex: 1, justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", backgroundColor: "#fff" }}
+        >
           <Camera
             style={{
               // flex: 1,
@@ -70,6 +95,7 @@ export default function ProductImage({ navigation }) {
                   alignSelf: "flex-end",
                   alignItems: "center",
                   backgroundColor: "transparent",
+                  // width:"50%"
                 }}
                 onPress={() => {
                   setType(
@@ -79,7 +105,12 @@ export default function ProductImage({ navigation }) {
                   );
                 }}
               >
-                <Text>Flip</Text>
+                <Icon
+                  reverse
+                  name="ios-reverse-camera"
+                  type="ionicon"
+                  color="#517fa4"
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -87,15 +118,16 @@ export default function ProductImage({ navigation }) {
                   alignSelf: "flex-end",
                   alignItems: "center",
                   backgroundColor: "transparent",
+                  // width:"50%"
                 }}
                 onPress={() => {
                   takePicture();
                 }}
               >
-                <Text style={{ fontWeight: "bold" }}>Take Image</Text>
+                <Icon reverse name="circle" type="feather" color="#517fa4" />
               </TouchableOpacity>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={{
                   alignSelf: "flex-end",
                   alignItems: "center",
@@ -103,7 +135,7 @@ export default function ProductImage({ navigation }) {
                 }}
               >
                 <Text>Flip</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </Camera>
         </View>
@@ -121,6 +153,29 @@ export default function ProductImage({ navigation }) {
             }}
             source={{ uri: img }}
           />
+          {processed != null ? (
+            <View
+              style={{
+                position: "absolute",
+                bottom: 0,
+                margin: 10,
+                width: "95%",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                title="3. Report In-Store Item Availability"
+                onPress={() =>
+                  navigation.navigate("ReportItems", {
+                    store: route.params.store,
+                    data: processed,
+                  })
+                }
+              />
+            </View>
+          ) : (
+            <View />
+          )}
         </View>
       )}
     </SafeAreaView>
