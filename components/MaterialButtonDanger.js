@@ -11,7 +11,7 @@ import * as Font from 'expo-font';
 
 function MaterialButtonDanger(props) {
   return (
-    <TouchableOpacity style={[styles.container, props.style]}>
+    <TouchableOpacity style={[styles.container, props.style]} onPress={props.onPress}>
       <Text style={styles.caption}>{props.text1 || "BUTTON"}</Text>
     </TouchableOpacity>
   );
@@ -19,7 +19,6 @@ function MaterialButtonDanger(props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#F44336",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -27,7 +26,8 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     elevation: 2,
     minWidth: 88,
-    borderRadius: 2,
+    borderRadius: 10,
+    margin:10,
     shadowOffset: {
       height: 1,
       width: 0
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   caption: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 30,
     // fontFamily: "roboto-regular"
   }
 });

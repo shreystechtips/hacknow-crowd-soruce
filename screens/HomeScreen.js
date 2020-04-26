@@ -7,13 +7,23 @@ import {
 	Alert,
 	SafeAreaView,
 } from "react-native";
-import Header from "../components/Header/Header.js";
 
 export default function HomeScreen({ navigation }) {
 	return (
 		<SafeAreaView style={styles.container}>
 			{/* <Header /> */}
+			<View>
+				<Button
+					title="Look for items"
+					onPress={() => navigation.navigate('Report', { name: 'Jane' })}
+				/>
+				<Button
+					title="Report availability of item"
+					onPress={() => navigation.navigate('Report', { name: 'Jane' })}
+				/>
+			</View>
 			<View style={styles.box}>
+
 				<View
 					style={{
 						backgroundColor: "#FCFFFC",
@@ -49,10 +59,7 @@ export default function HomeScreen({ navigation }) {
 						)
 					}
 				/>
-				<Button
-					title="Report an item"
-					onPress={() => navigation.navigate('Report', { name: 'Jane' })}
-				/>
+
 				<View style={{ height: 200, width: "100%" }} />
 			</View>
 		</SafeAreaView>

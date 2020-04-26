@@ -15,7 +15,7 @@ import { processDocument } from "../components/ImageProcessing";
 
 const screenWidth = Math.round(Dimensions.get("window").width);
 
-export default function Upload() {
+export default function ProductImage({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [img, setImg] = useState(null);

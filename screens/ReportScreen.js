@@ -9,9 +9,13 @@ import {
 	ActivityIndicator,
 	FlatList,
 	TextInput,
+	Item,
+	List,
+	ListItem,
+	TouchableHighlight,
 	Image,
 } from "react-native";
-import googlePlaceSearch from "./ReportScreen/googlePlaceSearch.js";
+import { SearchBar } from 'react-native-elements';
 import HeaderX from "../components/Header/HeaderX";
 
 // Report what's in stock
@@ -22,47 +26,77 @@ import HeaderX from "../components/Header/HeaderX";
 
 export default function ReportScreen({ navigation }) {
 	const [storeName, setStoreName] = React.useState('');
-	const [isLoading, setLoading] = useState(true);
+	const [isLoading, setLoading] = useState(false);
 	const [data, setData] = useState([]);
 
-	useEffect(() => {
-		fetch('https://reactnative.dev/movies.json')
-			.then((response) => response.json())
-			.then((json) => setData(json.movies))
-			.catch((error) => console.error(error))
-			.finally(() => setLoading(false));
-	}, []);
+	const updateSearch = search => {
+		setStoreName(search)
+	}
+	const getJson = () => {
+		setStoreName(storeName.trim())
+		if (storeName.trim() != "") {
+			setLoading(true);
+			fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${storeName.replace(/&/gi, '%26')}&types=&location=&radius=500&key=AIzaSyD4iruS6IbZHxDGgPcx8K-3PkB17MFsjso`)
+				.then((response) => response.json())
+				.then((json) => { setData(json.predictions.filter(prediction => prediction.types.includes('store'))) })
+				.catch((error) => console.error(error))
+				.finally(() => setLoading(false));
+		}
+	}
+
+	const renderRow = ({ item }) => {
+		return (
+			<TouchableHighlight
+				onPress={(view) => {
+					navigation.navigate('TakeImage', { store: item })}
+				}
+				underlayColor='rgba(0,0,0,0)'
+			>
+				<View style={{
+					width: "100%",
+					backgroundColor: "#d3d3d3",
+					padding: 10,
+					marginVertical: 5,
+					borderRadius: 10
+
+				}}>
+					<Text >{item.description}</Text>
+				</View>
+			</TouchableHighlight>
+		);
+	}
 
 	return (
-		<SafeAreaView>
-			<View>
-				<Button
-					title="Home"
-					onPress={() => navigation.navigate('Home', { name: 'Jane' })}
-				/>
-			</View>
-			<View style={{ padding: 24, backgroundColor: 'blue' }}>
-				<Text> Form Title </Text>
-				{/* Select store using google api to seatch store based on nearby and name*/}
-				<View>
-					<TextInput
-						placeholder="Enter the store"
-						value={storeName}
-						onChangeText={setStoreName}
-					/>
-				</View>
-			</View>
+		<SafeAreaView style={{ height: '100%' }}>
+			<SearchBar
+				platform="default"
+				placeholder="Type Store Name..."
+				onChangeText={updateSearch}
+				value={storeName}
+				onEndEditing={getJson}
+				showLoading={isLoading}
+			/>
 			<View style={{ padding: 24 }}>
 				{isLoading ? <ActivityIndicator /> : (
+					// <List>
 					<FlatList
 						data={data}
-						keyExtractor={({ id }, index) => id}
-						renderItem={({ item }) => {
-							// console.log(item);
-							return <Text syle={{ colour: 'black' }}>{item.title}, {item.releaseYear}</Text>
-						}}
+						keyExtractor={({ id }, index) => id.toString()}
+						renderItem={renderRow}
+					// ({ item }) => {
+					// 	return <Text> {item.description} </Text>
+					// 	// return (<Item name={item.description + item .id}/>);
+					// }
 					/>
+					// </List> */}
 				)}
+			</View>
+			<View style={{ position: 'absolute', bottom: 0, margin: 10, width: '95%',
+		justifyContent: "flex-end",}}>
+				<Button
+					title="Report Items"
+					onPress={() => navigation.navigate('ReportItems')}
+				/>
 			</View>
 		</SafeAreaView>
 

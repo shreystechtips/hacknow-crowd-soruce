@@ -1,70 +1,126 @@
 import React, { Component } from "react";
-import { StyleSheet, View, StatusBar } from "react-native";
-import HeaderX from "../components/Header/HeaderX";
-import MaterialButtonDanger from "../components/MaterialButtonDanger";
-import MaterialButtonViolet1 from "../components/MaterialButtonViolet1";
+import { StyleSheet, View, Button, SafeAreaView, TouchableOpacity, Text, ScrollView} from "react-native";
+import MaterialButtonPink from "../components/MaterialButtonPink";
+import Checkbox from "../components/Checkbox.js"
+
+
+function Separator() {
+  return <View style={styles.separator} />;
+
+}
+
+function handlePress(buttonName){
+  setCategory(buttonName)
+}
 
 function Selector(props) {
+  [category, setCategory] = React.useState(null);
+
+  let categoriesAndProducts = {
+    
+    "Non-Perishable Foods": {
+      "list": ["test1", "test2"]
+    }, 
+    "Hygenic Products":{
+      "list": ["test1", "test2", "test3", "test4", "test5"]
+    }, 
+    "First Aid":{
+      "list": ["test1", "test2"]
+    }, 
+    "Over The Counter Medical":{
+      "list": ["test1", "test2"]
+    },
+  
+  };
+    
+
   return (
-    <View style={styles.root}>
-      <StatusBar
-        barStyle="light-content"
-        hidden={false}
-        backgroundColor="rgba(0,0,0,0)"
-      ></StatusBar>
-      <HeaderX button="Settings" style={styles.headerX}></HeaderX>
-      <MaterialButtonDanger
-        text1="Look for Items"
-        style={styles.materialButtonDanger}
-      ></MaterialButtonDanger>
-      <MaterialButtonViolet1
-        text1="Report Items"
-        style={styles.materialButtonViolet1}
-      ></MaterialButtonViolet1>
-    </View>
-  );
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}> 
+      {Object.keys(categoriesAndProducts).map((buttonName) => (
+        <React.Fragment key={buttonName}>
+            <View>
+              <TouchableOpacity style={styles.touchable} onPress={(e) => handlePress(buttonName)}>
+                  <Text style={styles.caption}>{buttonName}</Text>
+              </TouchableOpacity>
+              {category === buttonName ? <Separator /> : null}
+              {category === buttonName ? categoriesAndProducts[buttonName].list.map(item => (
+                <TouchableOpacity style={styles.touchableMini}>
+                  <Checkbox label={item}/>
+                  {/* <Text style={styles.caption}>{item}</Text> */}
+              </TouchableOpacity>)) : null}
+
+            </View>
+            <Separator />
+          </React.Fragment>
+        ))}
+        
+      </ScrollView>
+    </SafeAreaView>
+      
+    );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
-    backgroundColor: "rgb(255,255,255)"
+    marginHorizontal: 16,
+    marginTop:10
   },
-  headerX: {
-    height: 80,
-    elevation: 15,
+  materialButton: {
+        width: 321,
+    height: 88,
+    borderRadius: 14,
+    marginTop: 40
+  },
+  separator: {
+    marginVertical: 10,
+    borderBottomColor: '#737373',
+   
+  },
+  touchable: {
+    backgroundColor: "#E91E63",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingRight: 16,
+    paddingLeft: 16,
+    elevation: 2,
+    minWidth: 88,
+    borderRadius: 2,
     shadowOffset: {
-      height: 7,
-      width: 1
+      height: 1,
+      width: 0
     },
-    shadowColor: "rgba(0,0,0,1)",
-    shadowOpacity: 0.1,
-    shadowRadius: 5
+    shadowColor: "#000",
+    shadowOpacity: 0.35,
+    shadowRadius: 5,
+    height: 88,
+    borderRadius: 14
   },
-  materialButtonDanger: {
-    width: 287,
-    height: 198,
-    borderRadius: 19,
-    borderColor: "#000000",
-    borderWidth: 0,
-    marginTop: 92,
-    alignSelf: "center"
+  caption: {
+    color: "#fff",
+    fontSize: 14,
   },
-  materialButtonViolet1: {
-    width: 287,
-    height: 198,
-    borderRadius: 19,
-    borderColor: "#000000",
-    borderWidth: 0,
+  touchableMini:{
+    backgroundColor: "#E91E63",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingRight: 16,
+    paddingLeft: 16,
+    height:60,
+    marginVertical:3,
+    marginHorizontal:30,
+    elevation: 2,
+    minWidth: 88,
+    borderRadius: 7,
     shadowOffset: {
-      height: 5,
-      width: 5
+      height: 1,
+      width: 0
     },
-    shadowColor: "rgba(0,0,0,1)",
-    shadowOpacity: 0.01,
-    marginTop: 49,
-    alignSelf: "center"
   }
-});
+}); 
 
+  
 export default Selector;
